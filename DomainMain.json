@@ -189,14 +189,14 @@
                         "caching": "ReadWrite",
                         "createOption": "FromImage"
                     }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('MachinePrefix'),'','ni','',padLeft(copyindex(1),2,'0')))]"
+                        }
+                    ]
                 }
-            },
-            "networkProfile": {
-                "networkInterfaces": [
-                    {
-                        "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('MachinePrefix'),'','ni','',padLeft(copyindex(1),2,'0')))]"
-                    }
-                ]
             }
         },
         {
