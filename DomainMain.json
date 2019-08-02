@@ -1,0 +1,234 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "MachinePrefix": {
+            "type": "string",
+            "defaultValue": "i"
+        },
+        "DomainName": {
+            "type": "string",
+            "defaultValue": "Cistec.es"
+        },
+        "domainUsername": {
+            "type": "string"
+        },
+        "domainPassword": {
+            "type": "string"
+        },
+        "ouPath": {
+            "type": "string",
+            "defaultValue": "test"
+        },
+        "domainJoinOptions": {
+            "type": "int",
+            "defaultValue": 3
+        },
+        "MachineCount": {
+            "type": "int",
+            "defaultValue": 2
+        },
+        "MachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_A0"
+        },
+        "VNetName": {
+            "type": "string",
+            "defaultValue": "Test"
+        },
+        "SubnetName": {
+            "type": "string",
+            "defaultValue": "Test"
+        },
+        "VNetResourceGroup": {
+            "type": "string",
+            "defaultValue": "Test"
+        },
+        "StorageType": {
+            "type": "string",
+            "defaultValue": "Standard_LRS"
+        },
+        "MachineImagePublisher": {
+            "type": "string",
+            "defaultValue": "MicrosoftWindowsServer"
+        },
+        "MachineImageOffer": {
+            "type": "string",
+            "defaultValue": "WindowsServer"
+        },
+        "MachineOSVersion": {
+            "type": "string",
+            "defaultValue": "2016-Datacenter"
+        },
+        "AdminUser": {
+            "type": "string"
+        },
+        "AdminPassword": {
+            "type": "securestring"
+        },
+        "Environments": {
+            "type": "string"
+        },
+        "AutomationShutdownTags": {
+            "type": "string",
+            "defaultValue": "DoNotShutDown"
+        },
+        "rgLocation": {
+            "type": "string",
+            "defaultValue": "westeurope"
+        },
+        "rgName": {
+            "type": "string",
+            "defaultValue": "default"
+        },
+        "Team": {
+            "type": "string",
+            "defaultValue": "unknown"
+        },
+        "CostValue": {
+            "type": "string",
+            "defaultValue": "unknown"
+        },
+        "Product": {
+            "type": "string",
+            "defaultValue": "unknown"
+        },
+        "functional-area": {
+            "type": "string",
+            "defaultValue": "unknown",
+            "allowedValues": [
+                "Company1"
+            ]
+        }
+    },
+    "variables": {
+        "VnetId": "[resourceId(parameters('VNetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('VNetName'))]",
+        "SubnetId": "[concat(variables('VnetId'),'/subnets/', parameters('SubnetName'))]",
+        "AsId": "[resourceId('Microsoft.Compute/availabilitySets',concat(parameters('MachinePrefix'),'','as'))]",
+        "EnvContainer": "develop",
+        "URIPrefix": "https://",
+        "URIPostfix": ".blob.core.windows.net"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('MachinePrefix'),'','ni','',padLeft(copyindex(1),2,'0'))]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2017-06-01",
+            "dependsOn": [],
+            "copy": {
+                "name": "nicLoop",
+                "count": "[parameters('MachineCount')]"
+            },
+            "tags": {
+                "displayName": "NetworkInterface",
+                "team": "[parameters('Team')]",
+                "costvalue": "[parameters('costvalue')]",
+                "product": "[parameters('Product')]",
+                "functional-area": "[parameters('functional-area')]"
+            },
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[variables('SubnetId')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "[concat(parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "location": "[resourceGroup().location]",
+            "apiVersion": "2017-03-30",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/', parameters('MachinePrefix'),'','ni','',padLeft(copyindex(1),2,'0'))]"
+            ],
+            "copy": {
+                "name": "machineLoop",
+                "count": "[parameters('MachineCount')]"
+            },
+            "tags": {
+                "displayName": "Machines",
+                "team": "[parameters('Team')]",
+                "costvalue": "[parameters('costvalue')]",
+                "product": "[parameters('Product')]",
+                "AutoShutdownSchedule": "[parameters('AutomationShutdownTags')]",
+                "functional-area": "[parameters('functional-area')]"
+            },
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('MachineSize')]"
+                },
+                "osProfile": {
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": false
+                    },
+                    "computerName": "[concat(parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]",
+                    "adminUsername": "[parameters('AdminUser')]",
+                    "adminPassword": "[parameters('AdminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[parameters('MachineImagePublisher')]",
+                        "offer": "[parameters('MachineImageOffer')]",
+                        "sku": "[parameters('MachineOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('MachinePrefix'),'-',padLeft(copyindex(1),2,'0'),'-os')]",
+                        "managedDisk": {
+                            "storageAccountType": "[parameters('StorageType')]"
+                        },
+                        "caching": "ReadWrite",
+                        "createOption": "FromImage"
+                    }
+                }
+            },
+            "networkProfile": {
+                "networkInterfaces": [
+                    {
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(parameters('MachinePrefix'),'','ni','',padLeft(copyindex(1),2,'0')))]"
+                    }
+                ]
+            }
+        },
+        {
+            "apiVersion": "2018-06-01",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "name": "[concat(parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'),'/joindomain')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Compute",
+                "type": "JsonADDomainExtension",
+                "typeHandlerVersion": "1.3",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "Name": "[parameters('DomainName')]",
+                    "OUPath": "[parameters('ouPath')]",
+                    "User": "[concat(parameters('DomainName'), '\\', parameters('domainUsername'))]",
+                    "Restart": "true",
+                    "Options": "[parameters('domainJoinOptions')]"
+                },
+                "protectedSettings": {
+                    "Password": "[parameters('domainPassword')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "deployment": {
+            "type": "object",
+            "value": "[deployment()]"
+        }
+    }
+}
