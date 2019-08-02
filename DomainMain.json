@@ -202,7 +202,7 @@
         {
             "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'),'/joindomain')]",
+            "name": "[concat(parameters('MachinePrefix'),'/joindomain')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
