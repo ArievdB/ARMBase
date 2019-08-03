@@ -107,7 +107,8 @@
         "AsId": "[resourceId('Microsoft.Compute/availabilitySets',concat(parameters('MachinePrefix'),'','as'))]",
         "EnvContainer": "develop",
         "URIPrefix": "https://",
-        "URIPostfix": ".blob.core.windows.net"
+        "URIPostfix": ".blob.core.windows.net",
+        "MachineCount": "[length(parameters('IpList'))]"
     },
     "resources": [
         {
