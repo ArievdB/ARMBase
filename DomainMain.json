@@ -208,7 +208,7 @@
                 "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
             ],
             "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
+                "publisher": "Microsoft.Compute",
                 "type": "JsonADDomainExtension",
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
