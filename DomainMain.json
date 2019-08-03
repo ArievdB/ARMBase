@@ -107,8 +107,7 @@
         "AsId": "[resourceId('Microsoft.Compute/availabilitySets',concat(parameters('MachinePrefix'),'','as'))]",
         "EnvContainer": "develop",
         "URIPrefix": "https://",
-        "URIPostfix": ".blob.core.windows.net",
-        "vmName": "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
+        "URIPostfix": ".blob.core.windows.net"
     },
     "resources": [
         {
@@ -201,15 +200,15 @@
             }
         },
         {
-            "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('vmName'),'/joindomain')]",
+            "name": "[concat(parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'),'/joindomain')]",
+            "apiVersion": "2017-03-30",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
             ],
             "properties": {
-                "publisher": "Microsoft.Compute",
+                "publisher": "Microsoft.Azure.Extensions",
                 "type": "JsonADDomainExtension",
                 "typeHandlerVersion": "1.3",
                 "autoUpgradeMinorVersion": true,
@@ -222,6 +221,10 @@
                 },
                 "protectedSettings": {
                     "Password": "[parameters('domainPassword')]"
+                },
+                "copy": {
+                    "name": "nicLoop",
+                    "count": "[variables('MachineCount')]"
                 }
             }
         }
