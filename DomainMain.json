@@ -107,7 +107,8 @@
         "AsId": "[resourceId('Microsoft.Compute/availabilitySets',concat(parameters('MachinePrefix'),'','as'))]",
         "EnvContainer": "develop",
         "URIPrefix": "https://",
-        "URIPostfix": ".blob.core.windows.net"
+        "URIPostfix": ".blob.core.windows.net",
+        "vmName": "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
     },
     "resources": [
         {
@@ -202,7 +203,7 @@
         {
             "apiVersion": "2018-06-01",
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "name": "[concat(parameters('MachinePrefix'),'/joindomain')]",
+            "name": "[concat(parameters('vmName'),'/joindomain')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/',parameters('MachinePrefix'),'',padLeft(copyindex(1),2,'0'))]"
