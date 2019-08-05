@@ -224,7 +224,7 @@
                 }
             },
             "copy": {
-                "name": "nicLoop",
+                "name": "MachineCount",
                 "count": "[parameters('MachineCount')]"
             }
         }
